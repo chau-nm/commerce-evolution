@@ -1,0 +1,19 @@
+volumes:
+  pg_volume:
+
+services:
+  database:
+    image: postgres:18
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=commerceevolutiondb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_volume:/var/lib/postgresql/18/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-commerceevolutiondb}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
