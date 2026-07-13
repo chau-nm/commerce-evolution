@@ -13,5 +13,4 @@ public class CommerceEvolutionApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CommerceEvolutionApplication.class, args);
 	}
-
 }
