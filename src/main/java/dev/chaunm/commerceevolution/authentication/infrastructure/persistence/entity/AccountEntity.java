@@ -18,7 +18,7 @@ public class AccountEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "hash_password", nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String hashedPassword;
 
     @Enumerated(EnumType.STRING)
