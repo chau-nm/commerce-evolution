@@ -1,0 +1,21 @@
+package dev.chaunm.commerceevolution.authentication.domain.exception;
+
+import dev.chaunm.commerceevolution.shared.exception.ErrorCode;
+
+public enum AuthenticationErrorCode implements ErrorCode {
+    INVALID_EMAIL("INVALID_EMAIL"),
+    INVALID_PASSWORD("INVALID_PASSWORD"),
+    ACCOUNT_NOT_FOUND("ACCOUNT_NOT_FOUND"),
+    ACCOUNT_ALREADY_EXISTS("ACCOUNT_ALREADY_EXISTS");
+
+    private final String code;
+
+    AuthenticationErrorCode(String code) {
+        this.code = code;
+    }
+
+    @Override
+    public String code() {
+        return code;
+    }
+}
