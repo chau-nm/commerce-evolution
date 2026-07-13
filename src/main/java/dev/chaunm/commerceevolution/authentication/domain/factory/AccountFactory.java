@@ -2,6 +2,7 @@ package dev.chaunm.commerceevolution.authentication.domain.factory;
 
 import dev.chaunm.commerceevolution.authentication.domain.model.Account;
 import dev.chaunm.commerceevolution.authentication.domain.model.valueobject.*;
+import org.springframework.stereotype.Component;
 
 public class AccountFactory {
     public static Account create(

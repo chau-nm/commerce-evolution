@@ -10,12 +10,12 @@ import lombok.*;
 public class Account {
     private AccountId id;
     private Email email;
-    private HashPassword password;
+    private HashPassword hashedPassword;
     private Role role;
     private Status status;
 
     public void verifyPassword(String password, PasswordHasher passwordHasher) {
-        if (!passwordHasher.matches(password, this.password)) {
+        if (!passwordHasher.matches(password, hashedPassword)) {
             throw new InvalidPasswordException();
         }
     }

@@ -4,6 +4,7 @@ import dev.chaunm.commerceevolution.shared.exception.ErrorCode;
 
 public enum AuthenticationErrorCode implements ErrorCode {
     INVALID_EMAIL("INVALID_EMAIL"),
+    EXISTED_EMAIL("EXISTED_EMAIL"),
     INVALID_PASSWORD("INVALID_PASSWORD"),
     ACCOUNT_NOT_FOUND("ACCOUNT_NOT_FOUND"),
     ACCOUNT_ALREADY_EXISTS("ACCOUNT_ALREADY_EXISTS");

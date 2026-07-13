@@ -26,7 +26,7 @@ public class AuthenticationUser implements UserDetails {
 
     @Override
     public @Nullable String getPassword() {
-        return account.getPassword().value();
+        return account.getHashedPassword().value();
     }
 
     @Override
