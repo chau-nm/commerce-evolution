@@ -34,7 +34,7 @@ public class UpdateProductUseCaseImpl implements UpdateProductUseCase {
         product.updateDetails(new ProductName(command.name()), slug);
 
         Product savedProduct = productRepository.save(product);
-        savedProduct.domainEvents().forEach(domainEventPublisher::publish);
+        product.domainEvents().forEach(domainEventPublisher::publish);
 
         return new UpdateProductResult(savedProduct.getId().value());
     }

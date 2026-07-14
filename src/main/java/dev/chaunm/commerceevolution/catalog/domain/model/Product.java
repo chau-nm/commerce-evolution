@@ -3,7 +3,10 @@ package dev.chaunm.commerceevolution.catalog.domain.model;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductArchivedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.VariantAddedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.exception.DuplicateVariantSkuException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.ProductArchivedException;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.*;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
 import lombok.Getter;
@@ -69,6 +72,23 @@ public class Product extends AggregateRoot {
         }
         this.status = ProductStatus.ARCHIVED;
         registerEvent(new ProductArchivedEvent(this.id));
+    }
+
+    public ProductVariant addVariant(SKU sku, String name) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+        boolean duplicateInProduct = variants.stream()
+                .anyMatch(variant -> variant.getSku().equals(sku));
+        if (duplicateInProduct) {
+            throw new DuplicateVariantSkuException(sku);
+        }
+
+        ProductVariant variant = new ProductVariant(VariantId.generate(), sku, name, true);
+        variants.add(variant);
+        registerEvent(new VariantAddedEvent(this.id, variant.getId(), variant.getSku()));
+
+        return variant;
     }
 
     public List<ProductVariant> getVariants() {

@@ -36,7 +36,7 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
         );
 
         Product savedProduct = productRepository.save(product);
-        savedProduct.domainEvents().forEach(domainEventPublisher::publish);
+        product.domainEvents().forEach(domainEventPublisher::publish);
 
         return new CreateProductResult(savedProduct.getId().value());
     }

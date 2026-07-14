@@ -25,7 +25,7 @@ public class PublishProductUseCaseImpl implements PublishProductUseCase {
         product.publish();
 
         Product savedProduct = productRepository.save(product);
-        savedProduct.domainEvents().forEach(domainEventPublisher::publish);
+        product.domainEvents().forEach(domainEventPublisher::publish);
 
         return new PublishProductResult(savedProduct.getId().value(), savedProduct.getStatus().name());
     }

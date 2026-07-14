@@ -8,7 +8,9 @@ public enum CatalogErrorCode implements ErrorCode {
     INVALID_SKU,
     DUPLICATE_SLUG,
     PRODUCT_NOT_FOUND,
-    INVALID_STATUS_TRANSITION;
+    INVALID_STATUS_TRANSITION,
+    PRODUCT_ARCHIVED,
+    DUPLICATE_SKU;
 
     @Override
     public String code() {

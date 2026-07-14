@@ -25,7 +25,7 @@ public class ArchiveProductUseCaseImpl implements ArchiveProductUseCase {
         product.archive();
 
         Product savedProduct = productRepository.save(product);
-        savedProduct.domainEvents().forEach(domainEventPublisher::publish);
+        product.domainEvents().forEach(domainEventPublisher::publish);
 
         return new ArchiveProductResult(savedProduct.getId().value(), savedProduct.getStatus().name());
     }

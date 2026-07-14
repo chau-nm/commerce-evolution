@@ -2,6 +2,7 @@ package dev.chaunm.commerceevolution.catalog.infrastructure.persistence.reposito
 
 import dev.chaunm.commerceevolution.catalog.domain.model.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductId;
+import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.Slug;
 import dev.chaunm.commerceevolution.catalog.domain.repository.ProductRepository;
 import dev.chaunm.commerceevolution.catalog.infrastructure.persistence.mapper.ProductMapper;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final JpaProductRepository jpaProductRepository;
+    private final JpaProductVariantRepository jpaProductVariantRepository;
     private final ProductMapper productMapper;
 
     @Override
@@ -25,6 +27,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public boolean existsBySlugAndIdNot(Slug slug, ProductId id) {
         return jpaProductRepository.existsBySlugAndIdNot(slug.value(), id.value());
+    }
+
+    @Override
+    public boolean existsByVariantSku(SKU sku) {
+        return jpaProductVariantRepository.existsBySku(sku.value());
     }
 
     @Override
