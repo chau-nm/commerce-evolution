@@ -1,5 +1,6 @@
 package dev.chaunm.commerceevolution.catalog.domain.model;
 
+import dev.chaunm.commerceevolution.catalog.domain.event.ProductArchivedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
@@ -60,6 +61,14 @@ public class Product extends AggregateRoot {
         }
         this.status = ProductStatus.PUBLISHED;
         registerEvent(new ProductPublishedEvent(this.id));
+    }
+
+    public void archive() {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new InvalidProductStatusTransitionException(this.status, ProductStatus.ARCHIVED);
+        }
+        this.status = ProductStatus.ARCHIVED;
+        registerEvent(new ProductArchivedEvent(this.id));
     }
 
     public List<ProductVariant> getVariants() {
