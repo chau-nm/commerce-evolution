@@ -1,6 +1,8 @@
 package dev.chaunm.commerceevolution.catalog.domain.model;
 
+import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.*;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
 import lombok.Getter;
@@ -50,6 +52,14 @@ public class Product extends AggregateRoot {
         this.name = name;
         this.slug = slug;
         registerEvent(new ProductUpdatedEvent(this.id, this.name, this.slug));
+    }
+
+    public void publish() {
+        if (this.status != ProductStatus.DRAFT) {
+            throw new InvalidProductStatusTransitionException(this.status, ProductStatus.PUBLISHED);
+        }
+        this.status = ProductStatus.PUBLISHED;
+        registerEvent(new ProductPublishedEvent(this.id));
     }
 
     public List<ProductVariant> getVariants() {
