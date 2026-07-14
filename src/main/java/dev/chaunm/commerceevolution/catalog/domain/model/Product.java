@@ -3,6 +3,7 @@ package dev.chaunm.commerceevolution.catalog.domain.model;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductArchivedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.CategoryAssignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.MediaAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.MediaRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.VariantAddedEvent;
@@ -142,6 +143,11 @@ public class Product extends AggregateRoot {
 
         medias.remove(media);
         registerEvent(new MediaRemovedEvent(this.id, mediaId));
+    }
+
+    public void assignCategory(CategoryId categoryId) {
+        this.categoryId = categoryId;
+        registerEvent(new CategoryAssignedEvent(this.id, categoryId));
     }
 
     public List<ProductVariant> getVariants() {
