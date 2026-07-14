@@ -4,9 +4,11 @@ import dev.chaunm.commerceevolution.catalog.domain.event.ProductArchivedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.VariantAddedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.VariantRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.exception.DuplicateVariantSkuException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.ProductArchivedException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.VariantNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.*;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
 import lombok.Getter;
@@ -89,6 +91,20 @@ public class Product extends AggregateRoot {
         registerEvent(new VariantAddedEvent(this.id, variant.getId(), variant.getSku()));
 
         return variant;
+    }
+
+    public void removeVariant(VariantId variantId) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        ProductVariant variant = variants.stream()
+                .filter(v -> v.getId().equals(variantId))
+                .findFirst()
+                .orElseThrow(VariantNotFoundException::new);
+
+        variants.remove(variant);
+        registerEvent(new VariantRemovedEvent(this.id, variantId));
     }
 
     public List<ProductVariant> getVariants() {
