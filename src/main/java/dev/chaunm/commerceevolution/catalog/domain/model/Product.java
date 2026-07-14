@@ -3,9 +3,11 @@ package dev.chaunm.commerceevolution.catalog.domain.model;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductArchivedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.MediaAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.VariantAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.VariantRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.exception.DuplicateVariantSkuException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidMediaUrlException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.ProductArchivedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.VariantNotFoundException;
@@ -105,6 +107,25 @@ public class Product extends AggregateRoot {
 
         variants.remove(variant);
         registerEvent(new VariantRemovedEvent(this.id, variantId));
+    }
+
+    public ProductMedia addMedia(String url, boolean primary) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+        if (url == null || url.isBlank()) {
+            throw new InvalidMediaUrlException(url);
+        }
+
+        if (primary) {
+            medias.forEach(ProductMedia::unmarkPrimary);
+        }
+
+        ProductMedia media = new ProductMedia(MediaId.generate(), url, medias.size(), primary);
+        medias.add(media);
+        registerEvent(new MediaAddedEvent(this.id, media.getId(), media.getUrl()));
+
+        return media;
     }
 
     public List<ProductVariant> getVariants() {

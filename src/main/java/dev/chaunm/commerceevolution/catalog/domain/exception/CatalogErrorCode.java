@@ -11,7 +11,8 @@ public enum CatalogErrorCode implements ErrorCode {
     INVALID_STATUS_TRANSITION,
     PRODUCT_ARCHIVED,
     DUPLICATE_SKU,
-    VARIANT_NOT_FOUND;
+    VARIANT_NOT_FOUND,
+    INVALID_MEDIA_URL;
 
     @Override
     public String code() {

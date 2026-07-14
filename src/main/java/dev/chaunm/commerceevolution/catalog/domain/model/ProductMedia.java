@@ -11,4 +11,8 @@ public class ProductMedia {
     private String url;
     private int sortOrder;
     private boolean primary;
+
+    public void unmarkPrimary() {
+        this.primary = false;
+    }
 }
