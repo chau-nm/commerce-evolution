@@ -1,5 +1,6 @@
 package dev.chaunm.commerceevolution.catalog.domain.model;
 
+import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.*;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
 import lombok.Getter;
@@ -43,6 +44,12 @@ public class Product extends AggregateRoot {
         this.status = status;
         this.variants = new ArrayList<>(variants);
         this.medias = new ArrayList<>(medias);
+    }
+
+    public void updateDetails(ProductName name, Slug slug) {
+        this.name = name;
+        this.slug = slug;
+        registerEvent(new ProductUpdatedEvent(this.id, this.name, this.slug));
     }
 
     public List<ProductVariant> getVariants() {
