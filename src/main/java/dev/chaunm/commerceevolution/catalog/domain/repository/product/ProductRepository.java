@@ -17,6 +17,7 @@ public interface ProductRepository {
     boolean existsByVariantSku(SKU sku);
     boolean existsByVariantSkuAndIdNot(SKU sku, VariantId id);
     Optional<Product> findById(ProductId id);
+    Optional<Product> findByVariantId(VariantId variantId);
     PaginationResult<Product> findAll(ProductStatus status, PaginationQuery query);
     Product save(Product product);
 }

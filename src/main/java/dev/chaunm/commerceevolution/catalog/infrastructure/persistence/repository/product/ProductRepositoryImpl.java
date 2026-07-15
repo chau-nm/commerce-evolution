@@ -54,6 +54,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    public Optional<Product> findByVariantId(VariantId variantId) {
+        return jpaProductVariantRepository.findById(variantId.value())
+                .map(variant -> variant.getProduct().getId())
+                .flatMap(jpaProductRepository::findById)
+                .map(productMapper::toDomain);
+    }
+
+    @Override
     public PaginationResult<Product> findAll(ProductStatus status, PaginationQuery query) {
         Pageable pageable = query.toPageable();
 
