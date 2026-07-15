@@ -19,6 +19,12 @@ public class SecurityConfiguration {
                         (auth) -> auth
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/actuator/**").permitAll()
+                                // TODO: remove once AuthenticationFilter is wired into this chain and
+                                // populates SecurityContext. Customer identity is resolved via
+                                // CurrentUserProvider in the meantime, so this endpoint group is
+                                // deliberately left open rather than rejected by a filter that
+                                // doesn't exist yet.
+                                .requestMatchers("/api/v1/customers/**").permitAll()
                                 .anyRequest().authenticated()
                 );
 
