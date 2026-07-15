@@ -24,7 +24,7 @@ public class GetProductDetailUseCaseImpl implements GetProductDetailUseCase {
                 product.getId().value(),
                 product.getName().value(),
                 product.getSlug().value(),
-                product.getCategoryId().value(),
+                product.getCategoryId() == null ? null : product.getCategoryId().value(),
                 product.getBrandId().value(),
                 product.getStatus().name(),
                 product.getVariants().stream()

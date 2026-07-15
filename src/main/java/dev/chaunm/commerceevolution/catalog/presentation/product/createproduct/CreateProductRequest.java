@@ -13,7 +13,6 @@ public record CreateProductRequest(
         @NotBlank
         @Size(max = 255)
         String slug,
-        @NotNull
         UUID categoryId,
         @NotNull
         UUID brandId

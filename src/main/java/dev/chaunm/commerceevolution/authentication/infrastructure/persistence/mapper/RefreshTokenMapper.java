@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 
 import java.util.UUID;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", implementationName = "RefreshTokenEntityMapperImpl")
 public interface RefreshTokenMapper {
 
     @Mapping(target = "accountId", source = "userId")

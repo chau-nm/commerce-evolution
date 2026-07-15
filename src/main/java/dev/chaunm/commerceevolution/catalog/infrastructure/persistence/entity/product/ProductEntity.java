@@ -36,7 +36,7 @@ public class ProductEntity extends BaseEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String slug;
 
-    @Column(name = "category_id", nullable = false)
+    @Column(name = "category_id")
     private UUID categoryId;
 
     @Column(name = "brand_id", nullable = false)

@@ -7,6 +7,7 @@ import dev.chaunm.commerceevolution.catalog.domain.event.product.ProductRestored
 import dev.chaunm.commerceevolution.catalog.domain.event.product.ProductUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.product.BrandChangedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.product.CategoryAssignedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.product.CategoryUnassignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaReorderedEvent;
@@ -32,7 +33,7 @@ import dev.chaunm.commerceevolution.catalog.domain.exception.variant.VariantNotF
 import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.valueobject.MediaId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.BrandId;
-import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.CategoryId;
+import dev.chaunm.commerceevolution.catalog.domain.model.category.valueobject.CategoryId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductName;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductStatus;
@@ -313,6 +314,11 @@ public class Product extends AggregateRoot {
     public void assignCategory(CategoryId categoryId) {
         this.categoryId = categoryId;
         registerEvent(new CategoryAssignedEvent(this.id, categoryId));
+    }
+
+    public void removeCategory() {
+        this.categoryId = null;
+        registerEvent(new CategoryUnassignedEvent(this.id));
     }
 
     public void changeBrand(BrandId brandId) {

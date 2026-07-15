@@ -1,12 +1,14 @@
 package dev.chaunm.commerceevolution.catalog.application.usecase.product.createproduct;
 
+import dev.chaunm.commerceevolution.catalog.domain.exception.category.CategoryNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.DuplicateSlugException;
 import dev.chaunm.commerceevolution.catalog.domain.factory.product.ProductFactory;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.BrandId;
-import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.CategoryId;
+import dev.chaunm.commerceevolution.catalog.domain.model.category.valueobject.CategoryId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductName;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.Slug;
+import dev.chaunm.commerceevolution.catalog.domain.repository.category.CategoryRepository;
 import dev.chaunm.commerceevolution.catalog.domain.repository.product.ProductRepository;
 import dev.chaunm.commerceevolution.shared.infrastructure.event.SpringDomainEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateProductUseCaseImpl implements CreateProductUseCase {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final SpringDomainEventPublisher domainEventPublisher;
 
     @Override
@@ -28,10 +31,15 @@ public class CreateProductUseCaseImpl implements CreateProductUseCase {
             throw new DuplicateSlugException(slug);
         }
 
+        CategoryId categoryId = command.categoryId() == null ? null : new CategoryId(command.categoryId());
+        if (categoryId != null && categoryRepository.findById(categoryId).isEmpty()) {
+            throw new CategoryNotFoundException();
+        }
+
         Product product = ProductFactory.create(
                 new ProductName(command.name()),
                 slug,
-                new CategoryId(command.categoryId()),
+                categoryId,
                 new BrandId(command.brandId())
         );
 
