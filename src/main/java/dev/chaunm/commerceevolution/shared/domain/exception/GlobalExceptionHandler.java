@@ -1,4 +1,4 @@
-package dev.chaunm.commerceevolution.shared.exception;
+package dev.chaunm.commerceevolution.shared.domain.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

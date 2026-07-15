@@ -1,6 +1,6 @@
 package dev.chaunm.commerceevolution.catalog.domain.exception;
 
-import dev.chaunm.commerceevolution.shared.exception.ErrorCode;
+import dev.chaunm.commerceevolution.shared.domain.exception.ErrorCode;
 
 public enum CatalogErrorCode implements ErrorCode {
     INVALID_PRODUCT_NAME,
@@ -13,7 +13,8 @@ public enum CatalogErrorCode implements ErrorCode {
     DUPLICATE_SKU,
     VARIANT_NOT_FOUND,
     INVALID_MEDIA_URL,
-    MEDIA_NOT_FOUND;
+    MEDIA_NOT_FOUND,
+    INVALID_STATUS_FILTER;
 
     @Override
     public String code() {

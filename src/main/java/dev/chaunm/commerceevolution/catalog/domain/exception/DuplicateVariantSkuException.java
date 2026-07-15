@@ -1,7 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.domain.exception;
 
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.SKU;
-import dev.chaunm.commerceevolution.shared.exception.ConflictException;
+import dev.chaunm.commerceevolution.shared.domain.exception.ConflictException;
 
 public class DuplicateVariantSkuException extends ConflictException {
     public DuplicateVariantSkuException(SKU sku) {

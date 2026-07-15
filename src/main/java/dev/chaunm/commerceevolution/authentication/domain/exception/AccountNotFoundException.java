@@ -1,6 +1,6 @@
 package dev.chaunm.commerceevolution.authentication.domain.exception;
 
-import dev.chaunm.commerceevolution.shared.exception.NotFoundException;
+import dev.chaunm.commerceevolution.shared.domain.exception.NotFoundException;
 
 public class AccountNotFoundException extends NotFoundException {
     public AccountNotFoundException() {

@@ -1,6 +1,6 @@
 package dev.chaunm.commerceevolution.authentication.domain.exception;
 
-import dev.chaunm.commerceevolution.shared.exception.ErrorCode;
+import dev.chaunm.commerceevolution.shared.domain.exception.ErrorCode;
 
 public enum AuthenticationErrorCode implements ErrorCode {
     INVALID_EMAIL("INVALID_EMAIL"),

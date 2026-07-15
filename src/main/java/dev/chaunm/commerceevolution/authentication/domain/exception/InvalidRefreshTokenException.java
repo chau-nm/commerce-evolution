@@ -1,6 +1,6 @@
 package dev.chaunm.commerceevolution.authentication.domain.exception;
 
-import dev.chaunm.commerceevolution.shared.exception.UnauthorizedException;
+import dev.chaunm.commerceevolution.shared.domain.exception.UnauthorizedException;
 
 public class InvalidRefreshTokenException extends UnauthorizedException {
     public InvalidRefreshTokenException() {

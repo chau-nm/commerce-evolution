@@ -1,7 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.domain.exception;
 
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductStatus;
-import dev.chaunm.commerceevolution.shared.exception.DomainException;
+import dev.chaunm.commerceevolution.shared.domain.exception.DomainException;
 
 public class InvalidProductStatusTransitionException extends DomainException {
     public InvalidProductStatusTransitionException(ProductStatus from, ProductStatus to) {

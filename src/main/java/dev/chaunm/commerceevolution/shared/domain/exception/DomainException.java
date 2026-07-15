@@ -1,4 +1,4 @@
-package dev.chaunm.commerceevolution.shared.exception;
+package dev.chaunm.commerceevolution.shared.domain.exception;
 
 import lombok.Getter;
 

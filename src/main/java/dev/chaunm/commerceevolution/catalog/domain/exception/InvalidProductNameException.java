@@ -1,6 +1,6 @@
 package dev.chaunm.commerceevolution.catalog.domain.exception;
 
-import dev.chaunm.commerceevolution.shared.exception.DomainException;
+import dev.chaunm.commerceevolution.shared.domain.exception.DomainException;
 
 public class InvalidProductNameException extends DomainException {
     public InvalidProductNameException(String value) {

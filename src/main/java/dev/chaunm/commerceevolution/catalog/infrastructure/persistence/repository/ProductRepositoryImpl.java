@@ -1,12 +1,22 @@
 package dev.chaunm.commerceevolution.catalog.infrastructure.persistence.repository;
 
 import dev.chaunm.commerceevolution.catalog.domain.model.Product;
+import dev.chaunm.commerceevolution.catalog.domain.model.ProductSummary;
+import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.BrandId;
+import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.CategoryId;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductId;
+import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductName;
+import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductStatus;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.Slug;
 import dev.chaunm.commerceevolution.catalog.domain.repository.ProductRepository;
+import dev.chaunm.commerceevolution.catalog.infrastructure.persistence.entity.ProductEntity;
 import dev.chaunm.commerceevolution.catalog.infrastructure.persistence.mapper.ProductMapper;
+import dev.chaunm.commerceevolution.shared.application.pagination.PaginationQuery;
+import dev.chaunm.commerceevolution.shared.application.pagination.PaginationResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -38,6 +48,25 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Optional<Product> findById(ProductId id) {
         return jpaProductRepository.findById(id.value())
                 .map(productMapper::toDomain);
+    }
+
+    @Override
+    public PaginationResult<ProductSummary> findAll(ProductStatus status, PaginationQuery query) {
+        Pageable pageable = query.toPageable();
+
+        Page<ProductEntity> page = status == null
+                ? jpaProductRepository.findAll(pageable)
+                : jpaProductRepository.findByStatus(status, pageable);
+
+        return PaginationResult.from(page)
+                .map(entity -> new ProductSummary(
+                        new ProductId(entity.getId()),
+                        new ProductName(entity.getName()),
+                        new Slug(entity.getSlug()),
+                        new CategoryId(entity.getCategoryId()),
+                        new BrandId(entity.getBrandId()),
+                        entity.getStatus()
+                ));
     }
 
     @Override
