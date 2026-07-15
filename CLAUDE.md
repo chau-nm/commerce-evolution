@@ -13,8 +13,9 @@ code favors explicit bounded-context boundaries, domain purity (no framework typ
 Boot application/module.
 
 The intended core business domains are: Authentication, Product Management, Inventory
-Management, Order Management, and Payment. Only **Authentication** is implemented so far — use
-it as the reference pattern when scaffolding a new bounded context.
+Management, Order Management, and Payment. **Authentication** and **Product Management**
+(`catalog`) are implemented so far — use them as the reference pattern when scaffolding a new
+bounded context. `inventory`, `order`, and `payment` packages exist but are currently empty.
 
 ## Commands
 
@@ -105,6 +106,12 @@ specific bounded context.
   (`@EnableJpaAuditing` must stay enabled for this to populate).
 - **Presentation** controllers are thin: `@Valid @RequestBody` DTO → mapper → use-case command →
   mapper → response DTO. No business logic in controllers.
+- **Pagination**: list endpoints take a `PaginationRequest` (`shared/presentation/pagination`,
+  1-based `page`), convert it to a `PaginationQuery` (`shared/application/pagination`, 0-based
+  `pageIndex`) via `PaginationQuery.from(...)`, and repositories return a
+  `PaginationResult<T>` built with `PaginationResult.from(springDataPage)`; use `.map(...)` to
+  project domain results to response items and `.toResponse()` to build the final
+  `PaginationResponse` (see `catalog` `listproducts` for the full round trip).
 
 ### Auth/security specifics
 
@@ -113,10 +120,27 @@ specific bounded context.
   `app.jwt.private-key` / `app.jwt.public-key`). Access/refresh token TTLs are configured via
   `app.jwt.access-token-ttl` / `refresh-token-ttl` (ISO-8601 durations, env-overridable).
 - `SecurityConfiguration` permits `/api/v1/auth/**` and `/actuator/**`; everything else requires
-  authentication. `AuthenticationFilter` is where inbound JWTs get parsed into claims — request
-  authentication population from those claims is not yet wired up, so keep this in mind before
-  assuming `SecurityContext` is populated on protected endpoints.
+  authentication. `AuthenticationFilter` parses inbound JWTs into claims but is **not registered
+  in the `SecurityFilterChain`** (no `addFilterBefore` call) and never populates
+  `SecurityContext` — so protected endpoints currently reject all requests regardless of a valid
+  bearer token. Wiring the filter into the chain and populating `SecurityContext` from its
+  claims is outstanding work before any non-`/api/v1/auth/**` endpoint is actually reachable.
 - Passwords are hashed via `PasswordHasherImpl` (BCrypt through the domain `PasswordHasher`
   port) — never hash/compare passwords outside that port.
-- The `refresh_tokens` table (V2 migration) exists but login/refresh-token issuance and rotation
-  are not implemented yet — `LoginUseCaseImpl` currently only issues an access token.
+- Login/refresh/logout are fully implemented: `LoginUseCaseImpl` issues both an access token and
+  a raw refresh token (persisting only its hash via `TokenHasher`), `RefreshTokenUseCaseImpl`
+  rotates it, and `LogoutUseCaseImpl` revokes it — see `RefreshTokenFactory` and the
+  `refresh_tokens` table (V2 migration).
+
+### Catalog specifics
+
+- `Product` is the aggregate root; `ProductVariant` and `ProductMedia` are child entities held
+  as in-aggregate lists (no separate repositories) — mutate them only through `Product` methods
+  (`addVariant`, `removeMedia`, `publish`, `archive`, etc.), never directly.
+- Status transitions are guarded on the aggregate itself (e.g. `publish()` requires `DRAFT`,
+  `archive()` rejects an already-`ARCHIVED` product) and most mutators reject any change once a
+  product is `ARCHIVED` — see `InvalidProductStatusTransitionException` / `ProductArchivedException`.
+- Every mutation on `Product` registers a domain event, but the corresponding
+  `@TransactionalEventListener` handlers under `catalog/application/event/` are currently stub
+  no-ops that only log — extend them when a real side effect is needed instead of adding logic
+  inline in the use case.
