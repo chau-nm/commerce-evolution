@@ -55,8 +55,8 @@ public class ProductRepositoryImpl implements ProductRepository {
         Pageable pageable = query.toPageable();
 
         Page<ProductEntity> page = status == null
-                ? jpaProductRepository.findAll(pageable)
-                : jpaProductRepository.findByStatus(status, pageable);
+                ? jpaProductRepository.findByDeletedAtIsNull(pageable)
+                : jpaProductRepository.findByStatusAndDeletedAtIsNull(status, pageable);
 
         return PaginationResult.from(page)
                 .map(entity -> new ProductSummary(

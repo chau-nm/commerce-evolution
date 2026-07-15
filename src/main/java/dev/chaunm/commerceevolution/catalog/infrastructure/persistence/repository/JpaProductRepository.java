@@ -11,5 +11,6 @@ import java.util.UUID;
 public interface JpaProductRepository extends JpaRepository<ProductEntity, UUID> {
     boolean existsBySlug(String slug);
     boolean existsBySlugAndIdNot(String slug, UUID id);
-    Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
+    Page<ProductEntity> findByDeletedAtIsNull(Pageable pageable);
+    Page<ProductEntity> findByStatusAndDeletedAtIsNull(ProductStatus status, Pageable pageable);
 }

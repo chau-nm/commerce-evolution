@@ -1,7 +1,9 @@
 package dev.chaunm.commerceevolution.catalog.domain.model;
 
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductArchivedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.ProductDeletedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductPublishedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.ProductRestoredEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.ProductUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.BrandChangedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.CategoryAssignedEvent;
@@ -13,12 +15,15 @@ import dev.chaunm.commerceevolution.catalog.domain.exception.DuplicateVariantSku
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidMediaUrlException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.MediaNotFoundException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.ProductAlreadyDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.ProductArchivedException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.ProductNotDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.VariantNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.*;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +42,8 @@ public class Product extends AggregateRoot {
     private BrandId brandId;
     @Getter
     private ProductStatus status;
+    @Getter
+    private Instant deletedAt;
     private final List<ProductVariant> variants;
     private final List<ProductMedia> medias;
 
@@ -47,6 +54,7 @@ public class Product extends AggregateRoot {
             CategoryId categoryId,
             BrandId brandId,
             ProductStatus status,
+            Instant deletedAt,
             List<ProductVariant> variants,
             List<ProductMedia> medias
     ) {
@@ -56,6 +64,7 @@ public class Product extends AggregateRoot {
         this.categoryId = categoryId;
         this.brandId = brandId;
         this.status = status;
+        this.deletedAt = deletedAt;
         this.variants = new ArrayList<>(variants);
         this.medias = new ArrayList<>(medias);
     }
@@ -144,6 +153,26 @@ public class Product extends AggregateRoot {
 
         medias.remove(media);
         registerEvent(new MediaRemovedEvent(this.id, mediaId));
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
+
+    public void delete() {
+        if (isDeleted()) {
+            throw new ProductAlreadyDeletedException();
+        }
+        this.deletedAt = Instant.now();
+        registerEvent(new ProductDeletedEvent(this.id));
+    }
+
+    public void restore() {
+        if (!isDeleted()) {
+            throw new ProductNotDeletedException();
+        }
+        this.deletedAt = null;
+        registerEvent(new ProductRestoredEvent(this.id));
     }
 
     public void assignCategory(CategoryId categoryId) {
