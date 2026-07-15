@@ -10,7 +10,10 @@ import dev.chaunm.commerceevolution.catalog.domain.event.CategoryAssignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.MediaAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.MediaRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.VariantAddedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.VariantDisabledEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.VariantEnabledEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.VariantRemovedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.VariantUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.exception.DuplicateVariantSkuException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidMediaUrlException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.InvalidProductStatusTransitionException;
@@ -18,6 +21,8 @@ import dev.chaunm.commerceevolution.catalog.domain.exception.MediaNotFoundExcept
 import dev.chaunm.commerceevolution.catalog.domain.exception.ProductAlreadyDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.ProductArchivedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.ProductNotDeletedException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.VariantAlreadyActiveException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.VariantAlreadyInactiveException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.VariantNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.*;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
@@ -113,13 +118,72 @@ public class Product extends AggregateRoot {
             throw new ProductArchivedException();
         }
 
-        ProductVariant variant = variants.stream()
-                .filter(v -> v.getId().equals(variantId))
-                .findFirst()
-                .orElseThrow(VariantNotFoundException::new);
+        ProductVariant variant = findVariant(variantId);
 
         variants.remove(variant);
         registerEvent(new VariantRemovedEvent(this.id, variantId));
+    }
+
+    public ProductVariant updateVariant(VariantId variantId, SKU sku, String name) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        ProductVariant variant = findVariant(variantId);
+
+        boolean duplicateInProduct = variants.stream()
+                .anyMatch(v -> !v.getId().equals(variantId) && v.getSku().equals(sku));
+        if (duplicateInProduct) {
+            throw new DuplicateVariantSkuException(sku);
+        }
+
+        variant.update(sku, name);
+        registerEvent(new VariantUpdatedEvent(this.id, variant.getId(), variant.getSku(), variant.getName()));
+
+        return variant;
+    }
+
+    public ProductVariant enableVariant(VariantId variantId) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        ProductVariant variant = findVariant(variantId);
+        if (variant.isActive()) {
+            throw new VariantAlreadyActiveException();
+        }
+
+        variant.activate();
+        registerEvent(new VariantEnabledEvent(this.id, variant.getId()));
+
+        return variant;
+    }
+
+    public ProductVariant disableVariant(VariantId variantId) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        ProductVariant variant = findVariant(variantId);
+        if (!variant.isActive()) {
+            throw new VariantAlreadyInactiveException();
+        }
+
+        variant.deactivate();
+        registerEvent(new VariantDisabledEvent(this.id, variant.getId()));
+
+        return variant;
+    }
+
+    public ProductVariant getVariant(VariantId variantId) {
+        return findVariant(variantId);
+    }
+
+    private ProductVariant findVariant(VariantId variantId) {
+        return variants.stream()
+                .filter(v -> v.getId().equals(variantId))
+                .findFirst()
+                .orElseThrow(VariantNotFoundException::new);
     }
 
     public ProductMedia addMedia(String url, boolean primary) {

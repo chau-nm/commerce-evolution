@@ -5,6 +5,7 @@ import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductStatus;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.Slug;
+import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.VariantId;
 import dev.chaunm.commerceevolution.catalog.domain.repository.ProductRepository;
 import dev.chaunm.commerceevolution.catalog.infrastructure.persistence.entity.ProductEntity;
 import dev.chaunm.commerceevolution.catalog.infrastructure.persistence.mapper.ProductMapper;
@@ -38,6 +39,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public boolean existsByVariantSku(SKU sku) {
         return jpaProductVariantRepository.existsBySku(sku.value());
+    }
+
+    @Override
+    public boolean existsByVariantSkuAndIdNot(SKU sku, VariantId id) {
+        return jpaProductVariantRepository.existsBySkuAndIdNot(sku.value(), id.value());
     }
 
     @Override
