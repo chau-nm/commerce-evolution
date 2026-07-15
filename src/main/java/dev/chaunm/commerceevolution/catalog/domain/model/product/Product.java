@@ -6,6 +6,7 @@ import dev.chaunm.commerceevolution.catalog.domain.event.product.ProductPublishe
 import dev.chaunm.commerceevolution.catalog.domain.event.product.ProductRestoredEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.product.ProductUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.product.BrandChangedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.product.BrandUnassignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.product.CategoryAssignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.product.CategoryUnassignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaAddedEvent;
@@ -32,7 +33,7 @@ import dev.chaunm.commerceevolution.catalog.domain.exception.variant.VariantAlre
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.VariantNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.valueobject.MediaId;
-import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.BrandId;
+import dev.chaunm.commerceevolution.catalog.domain.model.brand.valueobject.BrandId;
 import dev.chaunm.commerceevolution.catalog.domain.model.category.valueobject.CategoryId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductName;
@@ -324,6 +325,11 @@ public class Product extends AggregateRoot {
     public void changeBrand(BrandId brandId) {
         this.brandId = brandId;
         registerEvent(new BrandChangedEvent(this.id, brandId));
+    }
+
+    public void removeBrand() {
+        this.brandId = null;
+        registerEvent(new BrandUnassignedEvent(this.id));
     }
 
     public List<ProductVariant> getVariants() {

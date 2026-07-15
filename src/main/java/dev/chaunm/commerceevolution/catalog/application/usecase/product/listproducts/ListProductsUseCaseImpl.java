@@ -27,7 +27,7 @@ public class ListProductsUseCaseImpl implements ListProductsUseCase {
                         product.getName().value(),
                         product.getSlug().value(),
                         product.getCategoryId() == null ? null : product.getCategoryId().value(),
-                        product.getBrandId().value(),
+                        product.getBrandId() == null ? null : product.getBrandId().value(),
                         product.getStatus().name()
                 ));
     }

@@ -5,7 +5,7 @@ import dev.chaunm.commerceevolution.catalog.domain.event.product.ProductDuplicat
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.valueobject.MediaId;
-import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.BrandId;
+import dev.chaunm.commerceevolution.catalog.domain.model.brand.valueobject.BrandId;
 import dev.chaunm.commerceevolution.catalog.domain.model.category.valueobject.CategoryId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductName;

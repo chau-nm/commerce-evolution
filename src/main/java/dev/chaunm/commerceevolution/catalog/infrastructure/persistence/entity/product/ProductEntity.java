@@ -39,7 +39,7 @@ public class ProductEntity extends BaseEntity {
     @Column(name = "category_id")
     private UUID categoryId;
 
-    @Column(name = "brand_id", nullable = false)
+    @Column(name = "brand_id")
     private UUID brandId;
 
     @Enumerated(EnumType.STRING)

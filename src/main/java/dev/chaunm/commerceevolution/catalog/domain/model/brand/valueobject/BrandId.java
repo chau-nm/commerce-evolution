@@ -1,4 +1,4 @@
-package dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject;
+package dev.chaunm.commerceevolution.catalog.domain.model.brand.valueobject;
 
 import java.util.Objects;
 import java.util.UUID;
