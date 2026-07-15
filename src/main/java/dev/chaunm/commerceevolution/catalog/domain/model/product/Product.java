@@ -9,14 +9,19 @@ import dev.chaunm.commerceevolution.catalog.domain.event.product.BrandChangedEve
 import dev.chaunm.commerceevolution.catalog.domain.event.product.CategoryAssignedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaRemovedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaReorderedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.media.MediaUpdatedEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.media.ThumbnailChangedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantDisabledEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantEnabledEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.DuplicateVariantSkuException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.media.InvalidMediaOrderException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.media.InvalidMediaUrlException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.InvalidProductStatusTransitionException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.media.MediaAlreadyPrimaryException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.media.MediaNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductAlreadyDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductArchivedException;
@@ -42,6 +47,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Product extends AggregateRoot {
 
@@ -220,13 +227,67 @@ public class Product extends AggregateRoot {
             throw new ProductArchivedException();
         }
 
-        ProductMedia media = medias.stream()
-                .filter(m -> m.getId().equals(mediaId))
-                .findFirst()
-                .orElseThrow(MediaNotFoundException::new);
+        ProductMedia media = findMedia(mediaId);
 
         medias.remove(media);
         registerEvent(new MediaRemovedEvent(this.id, mediaId));
+    }
+
+    public ProductMedia updateMedia(MediaId mediaId, String url) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+        if (url == null || url.isBlank()) {
+            throw new InvalidMediaUrlException(url);
+        }
+
+        ProductMedia media = findMedia(mediaId);
+        media.update(url);
+        registerEvent(new MediaUpdatedEvent(this.id, media.getId(), media.getUrl()));
+
+        return media;
+    }
+
+    public ProductMedia markThumbnail(MediaId mediaId) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        ProductMedia media = findMedia(mediaId);
+        if (media.isPrimary()) {
+            throw new MediaAlreadyPrimaryException();
+        }
+
+        medias.forEach(ProductMedia::unmarkPrimary);
+        media.markPrimary();
+        registerEvent(new ThumbnailChangedEvent(this.id, media.getId()));
+
+        return media;
+    }
+
+    public void reorderMedia(List<MediaId> orderedMediaIds) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        Set<MediaId> currentIds = medias.stream().map(ProductMedia::getId).collect(Collectors.toSet());
+        boolean sameSet = orderedMediaIds.size() == currentIds.size() && currentIds.containsAll(orderedMediaIds);
+        if (!sameSet) {
+            throw new InvalidMediaOrderException();
+        }
+
+        for (int i = 0; i < orderedMediaIds.size(); i++) {
+            findMedia(orderedMediaIds.get(i)).reorder(i);
+        }
+
+        registerEvent(new MediaReorderedEvent(this.id, orderedMediaIds));
+    }
+
+    private ProductMedia findMedia(MediaId mediaId) {
+        return medias.stream()
+                .filter(m -> m.getId().equals(mediaId))
+                .findFirst()
+                .orElseThrow(MediaNotFoundException::new);
     }
 
     public boolean isDeleted() {

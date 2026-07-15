@@ -18,7 +18,9 @@ public enum CatalogErrorCode implements ErrorCode {
     PRODUCT_ALREADY_DELETED,
     PRODUCT_NOT_DELETED,
     VARIANT_ALREADY_ACTIVE,
-    VARIANT_ALREADY_INACTIVE;
+    VARIANT_ALREADY_INACTIVE,
+    MEDIA_ALREADY_PRIMARY,
+    INVALID_MEDIA_ORDER;
 
     @Override
     public String code() {

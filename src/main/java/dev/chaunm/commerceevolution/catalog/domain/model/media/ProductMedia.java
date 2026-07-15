@@ -15,4 +15,16 @@ public class ProductMedia {
     public void unmarkPrimary() {
         this.primary = false;
     }
+
+    public void markPrimary() {
+        this.primary = true;
+    }
+
+    public void update(String url) {
+        this.url = url;
+    }
+
+    public void reorder(int sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }
