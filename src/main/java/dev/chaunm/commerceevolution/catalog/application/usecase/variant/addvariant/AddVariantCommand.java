@@ -5,5 +5,6 @@ import java.util.UUID;
 public record AddVariantCommand(
         UUID productId,
         String sku,
-        String name
+        String name,
+        long price
 ) {}

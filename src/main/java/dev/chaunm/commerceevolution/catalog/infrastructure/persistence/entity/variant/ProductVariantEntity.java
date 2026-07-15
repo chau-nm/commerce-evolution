@@ -36,4 +36,7 @@ public class ProductVariantEntity extends BaseEntity {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(nullable = false)
+    private long price;
 }

@@ -1,6 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.infrastructure.persistence.mapper.variant;
 
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.Money;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.VariantId;
 import dev.chaunm.commerceevolution.catalog.infrastructure.persistence.entity.variant.ProductVariantEntity;
@@ -29,5 +30,13 @@ public interface ProductVariantMapper {
 
     default SKU toSku(String value) {
         return value == null ? null : new SKU(value);
+    }
+
+    default long toPriceValue(Money price) {
+        return price == null ? 0L : price.amount();
+    }
+
+    default Money toMoney(long value) {
+        return new Money(value);
     }
 }

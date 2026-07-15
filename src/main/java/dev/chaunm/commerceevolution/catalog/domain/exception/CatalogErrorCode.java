@@ -31,7 +31,8 @@ public enum CatalogErrorCode implements ErrorCode {
     INVALID_BRAND_NAME,
     BRAND_NOT_FOUND,
     BRAND_ALREADY_DELETED,
-    BRAND_NOT_DELETED;
+    BRAND_NOT_DELETED,
+    INVALID_PRICE;
 
     @Override
     public String code() {

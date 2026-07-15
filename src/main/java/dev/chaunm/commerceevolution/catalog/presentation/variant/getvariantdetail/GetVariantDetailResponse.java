@@ -7,5 +7,6 @@ public record GetVariantDetailResponse(
         UUID productId,
         String sku,
         String name,
-        boolean active
+        boolean active,
+        long price
 ) {}

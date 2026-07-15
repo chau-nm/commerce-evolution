@@ -5,6 +5,7 @@ import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotF
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.Money;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.repository.product.ProductRepository;
 import dev.chaunm.commerceevolution.shared.infrastructure.event.SpringDomainEventPublisher;
@@ -30,7 +31,8 @@ public class AddVariantUseCaseImpl implements AddVariantUseCase {
             throw new DuplicateVariantSkuException(sku);
         }
 
-        ProductVariant variant = product.addVariant(sku, command.name());
+        Money price = new Money(command.price());
+        ProductVariant variant = product.addVariant(sku, command.name(), price);
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);
@@ -39,7 +41,8 @@ public class AddVariantUseCaseImpl implements AddVariantUseCase {
                 savedProduct.getId().value(),
                 variant.getId().value(),
                 variant.getSku().value(),
-                variant.getName()
+                variant.getName(),
+                variant.getPrice().amount()
         );
     }
 }

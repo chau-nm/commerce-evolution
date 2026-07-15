@@ -6,5 +6,6 @@ public record AddVariantResponse(
         UUID productId,
         UUID variantId,
         String sku,
-        String name
+        String name,
+        long price
 ) {}

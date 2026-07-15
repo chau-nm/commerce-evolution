@@ -10,7 +10,9 @@ import dev.chaunm.commerceevolution.inventory.domain.exception.InvalidQuantityEx
 import dev.chaunm.commerceevolution.inventory.domain.model.valueobject.InventoryId;
 import dev.chaunm.commerceevolution.inventory.domain.model.valueobject.VariantId;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
+import lombok.Getter;
 
+@Getter
 public class Inventory extends AggregateRoot {
 
     private final InventoryId id;
@@ -78,19 +80,4 @@ public class Inventory extends AggregateRoot {
         registerEvent(new StockDeductedEvent(this.id, this.variantId, quantity, this.reservedQuantity));
     }
 
-    public InventoryId getId() {
-        return id;
-    }
-
-    public VariantId getVariantId() {
-        return variantId;
-    }
-
-    public int getAvailableQuantity() {
-        return availableQuantity;
-    }
-
-    public int getReservedQuantity() {
-        return reservedQuantity;
-    }
 }

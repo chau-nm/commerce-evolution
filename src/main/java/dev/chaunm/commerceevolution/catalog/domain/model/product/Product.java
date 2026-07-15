@@ -17,6 +17,7 @@ import dev.chaunm.commerceevolution.catalog.domain.event.media.ThumbnailChangedE
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantAddedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantDisabledEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantEnabledEvent;
+import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantPriceChangedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantRemovedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.event.variant.VariantUpdatedEvent;
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.DuplicateVariantSkuException;
@@ -40,6 +41,7 @@ import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.Pro
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductStatus;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.Slug;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.Money;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.VariantId;
 import dev.chaunm.commerceevolution.shared.domain.model.AggregateRoot;
@@ -115,7 +117,7 @@ public class Product extends AggregateRoot {
         registerEvent(new ProductArchivedEvent(this.id));
     }
 
-    public ProductVariant addVariant(SKU sku, String name) {
+    public ProductVariant addVariant(SKU sku, String name, Money price) {
         if (this.status == ProductStatus.ARCHIVED) {
             throw new ProductArchivedException();
         }
@@ -125,7 +127,7 @@ public class Product extends AggregateRoot {
             throw new DuplicateVariantSkuException(sku);
         }
 
-        ProductVariant variant = new ProductVariant(VariantId.generate(), sku, name, true);
+        ProductVariant variant = new ProductVariant(VariantId.generate(), sku, name, true, price);
         variants.add(variant);
         registerEvent(new VariantAddedEvent(this.id, variant.getId(), variant.getSku()));
 
@@ -158,6 +160,18 @@ public class Product extends AggregateRoot {
 
         variant.update(sku, name);
         registerEvent(new VariantUpdatedEvent(this.id, variant.getId(), variant.getSku(), variant.getName()));
+
+        return variant;
+    }
+
+    public ProductVariant changeVariantPrice(VariantId variantId, Money price) {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+
+        ProductVariant variant = findVariant(variantId);
+        variant.changePrice(price);
+        registerEvent(new VariantPriceChangedEvent(this.id, variant.getId(), variant.getPrice()));
 
         return variant;
     }

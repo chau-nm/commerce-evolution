@@ -13,6 +13,7 @@ public interface AddVariantMapper {
     @Mapping(target = "productId", source = "productId")
     @Mapping(target = "sku", source = "request.sku")
     @Mapping(target = "name", source = "request.name")
+    @Mapping(target = "price", source = "request.price")
     AddVariantCommand toCommand(UUID productId, AddVariantRequest request);
 
     AddVariantResponse toResponse(AddVariantResult result);

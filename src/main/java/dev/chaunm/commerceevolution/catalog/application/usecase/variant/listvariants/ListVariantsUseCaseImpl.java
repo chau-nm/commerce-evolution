@@ -26,7 +26,8 @@ public class ListVariantsUseCaseImpl implements ListVariantsUseCase {
                                 variant.getId().value(),
                                 variant.getSku().value(),
                                 variant.getName(),
-                                variant.isActive()
+                                variant.isActive(),
+                                variant.getPrice().amount()
                         ))
                         .toList()
         );
