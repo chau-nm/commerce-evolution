@@ -22,13 +22,13 @@ public class ListProductsUseCaseImpl implements ListProductsUseCase {
         PaginationQuery query = PaginationQuery.from(command.pagination());
 
         return productRepository.findAll(status, query)
-                .map(summary -> new ProductSummaryItem(
-                        summary.id().value(),
-                        summary.name().value(),
-                        summary.slug().value(),
-                        summary.categoryId().value(),
-                        summary.brandId().value(),
-                        summary.status().name()
+                .map(product -> new ProductSummaryItem(
+                        product.getId().value(),
+                        product.getName().value(),
+                        product.getSlug().value(),
+                        product.getCategoryId().value(),
+                        product.getBrandId().value(),
+                        product.getStatus().name()
                 ));
     }
 

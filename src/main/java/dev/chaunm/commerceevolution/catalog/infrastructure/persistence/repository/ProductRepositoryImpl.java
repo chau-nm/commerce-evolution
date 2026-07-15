@@ -1,11 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.infrastructure.persistence.repository;
 
 import dev.chaunm.commerceevolution.catalog.domain.model.Product;
-import dev.chaunm.commerceevolution.catalog.domain.model.ProductSummary;
-import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.BrandId;
-import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.CategoryId;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductId;
-import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductName;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.ProductStatus;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.valueobject.Slug;
@@ -51,7 +47,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public PaginationResult<ProductSummary> findAll(ProductStatus status, PaginationQuery query) {
+    public PaginationResult<Product> findAll(ProductStatus status, PaginationQuery query) {
         Pageable pageable = query.toPageable();
 
         Page<ProductEntity> page = status == null
@@ -59,14 +55,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 : jpaProductRepository.findByStatusAndDeletedAtIsNull(status, pageable);
 
         return PaginationResult.from(page)
-                .map(entity -> new ProductSummary(
-                        new ProductId(entity.getId()),
-                        new ProductName(entity.getName()),
-                        new Slug(entity.getSlug()),
-                        new CategoryId(entity.getCategoryId()),
-                        new BrandId(entity.getBrandId()),
-                        entity.getStatus()
-                ));
+                .map(productMapper::toDomain);
     }
 
     @Override
