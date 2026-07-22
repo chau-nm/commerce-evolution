@@ -11,7 +11,8 @@ public enum OrderErrorCode implements ErrorCode {
     INVALID_QUANTITY,
     INVALID_MONEY,
     INVALID_ORDER_NUMBER,
-    INVALID_SHIPPING_ADDRESS;
+    INVALID_SHIPPING_ADDRESS,
+    CUSTOMER_NOT_FOUND;
 
     @Override
     public String code() {

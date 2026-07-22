@@ -28,11 +28,13 @@ import dev.chaunm.commerceevolution.catalog.domain.exception.media.MediaAlreadyP
 import dev.chaunm.commerceevolution.catalog.domain.exception.media.MediaNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductAlreadyDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductArchivedException;
+import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotDeletedException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.VariantAlreadyActiveException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.VariantAlreadyInactiveException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.VariantNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
+import dev.chaunm.commerceevolution.catalog.domain.model.media.MediaView;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.valueobject.MediaId;
 import dev.chaunm.commerceevolution.catalog.domain.model.brand.valueobject.BrandId;
 import dev.chaunm.commerceevolution.catalog.domain.model.category.valueobject.CategoryId;
@@ -41,6 +43,7 @@ import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.Pro
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductStatus;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.Slug;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.VariantView;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.Money;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.VariantId;
@@ -96,9 +99,24 @@ public class Product extends AggregateRoot {
     }
 
     public void updateDetails(ProductName name, Slug slug) {
+        assertMutable();
         this.name = name;
         this.slug = slug;
         registerEvent(new ProductUpdatedEvent(this.id, this.name, this.slug));
+    }
+
+    /**
+     * Guards every mutator that changes a product's content (as opposed to its own
+     * lifecycle status). Centralized here so archived/deleted coverage can't silently drift
+     * out of sync across mutators the way category/brand assignment once did.
+     */
+    private void assertMutable() {
+        if (this.status == ProductStatus.ARCHIVED) {
+            throw new ProductArchivedException();
+        }
+        if (isDeleted()) {
+            throw new ProductDeletedException();
+        }
     }
 
     public void publish() {
@@ -117,10 +135,8 @@ public class Product extends AggregateRoot {
         registerEvent(new ProductArchivedEvent(this.id));
     }
 
-    public ProductVariant addVariant(SKU sku, String name, Money price) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public VariantView addVariant(SKU sku, String name, Money price) {
+        assertMutable();
         boolean duplicateInProduct = variants.stream()
                 .anyMatch(variant -> variant.getSku().equals(sku));
         if (duplicateInProduct) {
@@ -135,9 +151,7 @@ public class Product extends AggregateRoot {
     }
 
     public void removeVariant(VariantId variantId) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+        assertMutable();
 
         ProductVariant variant = findVariant(variantId);
 
@@ -145,10 +159,8 @@ public class Product extends AggregateRoot {
         registerEvent(new VariantRemovedEvent(this.id, variantId));
     }
 
-    public ProductVariant updateVariant(VariantId variantId, SKU sku, String name) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public VariantView updateVariant(VariantId variantId, SKU sku, String name) {
+        assertMutable();
 
         ProductVariant variant = findVariant(variantId);
 
@@ -164,10 +176,8 @@ public class Product extends AggregateRoot {
         return variant;
     }
 
-    public ProductVariant changeVariantPrice(VariantId variantId, Money price) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public VariantView changeVariantPrice(VariantId variantId, Money price) {
+        assertMutable();
 
         ProductVariant variant = findVariant(variantId);
         variant.changePrice(price);
@@ -176,10 +186,8 @@ public class Product extends AggregateRoot {
         return variant;
     }
 
-    public ProductVariant enableVariant(VariantId variantId) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public VariantView enableVariant(VariantId variantId) {
+        assertMutable();
 
         ProductVariant variant = findVariant(variantId);
         if (variant.isActive()) {
@@ -192,10 +200,8 @@ public class Product extends AggregateRoot {
         return variant;
     }
 
-    public ProductVariant disableVariant(VariantId variantId) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public VariantView disableVariant(VariantId variantId) {
+        assertMutable();
 
         ProductVariant variant = findVariant(variantId);
         if (!variant.isActive()) {
@@ -208,7 +214,7 @@ public class Product extends AggregateRoot {
         return variant;
     }
 
-    public ProductVariant getVariant(VariantId variantId) {
+    public VariantView getVariant(VariantId variantId) {
         return findVariant(variantId);
     }
 
@@ -219,10 +225,8 @@ public class Product extends AggregateRoot {
                 .orElseThrow(VariantNotFoundException::new);
     }
 
-    public ProductMedia addMedia(String url, boolean primary) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public MediaView addMedia(String url, boolean primary) {
+        assertMutable();
         if (url == null || url.isBlank()) {
             throw new InvalidMediaUrlException(url);
         }
@@ -239,9 +243,7 @@ public class Product extends AggregateRoot {
     }
 
     public void removeMedia(MediaId mediaId) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+        assertMutable();
 
         ProductMedia media = findMedia(mediaId);
 
@@ -249,10 +251,8 @@ public class Product extends AggregateRoot {
         registerEvent(new MediaRemovedEvent(this.id, mediaId));
     }
 
-    public ProductMedia updateMedia(MediaId mediaId, String url) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public MediaView updateMedia(MediaId mediaId, String url) {
+        assertMutable();
         if (url == null || url.isBlank()) {
             throw new InvalidMediaUrlException(url);
         }
@@ -264,10 +264,8 @@ public class Product extends AggregateRoot {
         return media;
     }
 
-    public ProductMedia markThumbnail(MediaId mediaId) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+    public MediaView markThumbnail(MediaId mediaId) {
+        assertMutable();
 
         ProductMedia media = findMedia(mediaId);
         if (media.isPrimary()) {
@@ -282,9 +280,7 @@ public class Product extends AggregateRoot {
     }
 
     public void reorderMedia(List<MediaId> orderedMediaIds) {
-        if (this.status == ProductStatus.ARCHIVED) {
-            throw new ProductArchivedException();
-        }
+        assertMutable();
 
         Set<MediaId> currentIds = medias.stream().map(ProductMedia::getId).collect(Collectors.toSet());
         boolean sameSet = orderedMediaIds.size() == currentIds.size() && currentIds.containsAll(orderedMediaIds);
@@ -327,30 +323,34 @@ public class Product extends AggregateRoot {
     }
 
     public void assignCategory(CategoryId categoryId) {
+        assertMutable();
         this.categoryId = categoryId;
         registerEvent(new CategoryAssignedEvent(this.id, categoryId));
     }
 
     public void removeCategory() {
+        assertMutable();
         this.categoryId = null;
         registerEvent(new CategoryUnassignedEvent(this.id));
     }
 
     public void changeBrand(BrandId brandId) {
+        assertMutable();
         this.brandId = brandId;
         registerEvent(new BrandChangedEvent(this.id, brandId));
     }
 
     public void removeBrand() {
+        assertMutable();
         this.brandId = null;
         registerEvent(new BrandUnassignedEvent(this.id));
     }
 
-    public List<ProductVariant> getVariants() {
+    public List<? extends VariantView> getVariants() {
         return Collections.unmodifiableList(variants);
     }
 
-    public List<ProductMedia> getMedias() {
+    public List<? extends MediaView> getMedias() {
         return Collections.unmodifiableList(medias);
     }
 }

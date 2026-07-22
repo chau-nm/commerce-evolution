@@ -64,7 +64,13 @@ public class JwtProviderImpl implements JwtProvider {
                 throw new JOSEException("JWT signature verification failed");
             }
 
-            return signedJWT.getJWTClaimsSet();
+            JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+            Date expirationTime = claims.getExpirationTime();
+            if (expirationTime == null || expirationTime.before(new Date())) {
+                throw new JOSEException("JWT has expired");
+            }
+
+            return claims;
         } catch (ParseException | JOSEException e) {
             throw new ValidJwtException(e.getMessage());
         }

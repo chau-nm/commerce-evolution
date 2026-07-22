@@ -1,7 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.application.usecase.media.uploadmedia;
 
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
-import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
+import dev.chaunm.commerceevolution.catalog.domain.model.media.MediaView;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.repository.product.ProductRepository;
@@ -26,7 +26,7 @@ public class UploadMediaUseCaseImpl implements UploadMediaUseCase {
                 .orElseThrow(ProductNotFoundException::new);
 
         String url = mediaStorage.store(command.filename(), command.content(), command.contentType());
-        ProductMedia media = product.addMedia(url, command.primary());
+        MediaView media = product.addMedia(url, command.primary());
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);

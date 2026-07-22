@@ -74,7 +74,11 @@ public class Customer extends AggregateRoot {
             String postalCode,
             boolean isDefault
     ) {
-        if (isDefault) {
+        // The first address always becomes the default, regardless of what the caller passed:
+        // an address book with entries but no default is an invariant a client shouldn't be
+        // able to create just by omitting the flag on the first call.
+        boolean effectiveIsDefault = isDefault || addresses.isEmpty();
+        if (effectiveIsDefault) {
             addresses.forEach(Address::unmarkDefault);
         }
 
@@ -87,7 +91,7 @@ public class Customer extends AggregateRoot {
                 ward,
                 street,
                 postalCode,
-                isDefault
+                effectiveIsDefault
         );
         addresses.add(address);
         registerEvent(new CustomerAddressAddedEvent(this.id, address.getId()));

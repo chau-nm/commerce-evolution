@@ -2,7 +2,7 @@ package dev.chaunm.commerceevolution.catalog.application.usecase.media.addmedia;
 
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
-import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
+import dev.chaunm.commerceevolution.catalog.domain.model.media.MediaView;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.repository.product.ProductRepository;
 import dev.chaunm.commerceevolution.shared.infrastructure.event.SpringDomainEventPublisher;
@@ -23,7 +23,7 @@ public class AddMediaUseCaseImpl implements AddMediaUseCase {
         Product product = productRepository.findById(new ProductId(command.productId()))
                 .orElseThrow(ProductNotFoundException::new);
 
-        ProductMedia media = product.addMedia(command.url(), command.primary());
+        MediaView media = product.addMedia(command.url(), command.primary());
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);

@@ -3,7 +3,7 @@ package dev.chaunm.commerceevolution.catalog.application.usecase.variant.changev
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
-import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.VariantView;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.Money;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.VariantId;
 import dev.chaunm.commerceevolution.catalog.domain.repository.product.ProductRepository;
@@ -26,7 +26,7 @@ public class ChangeVariantPriceUseCaseImpl implements ChangeVariantPriceUseCase 
                 .orElseThrow(ProductNotFoundException::new);
 
         Money price = new Money(command.price());
-        ProductVariant variant = product.changeVariantPrice(new VariantId(command.variantId()), price);
+        VariantView variant = product.changeVariantPrice(new VariantId(command.variantId()), price);
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);

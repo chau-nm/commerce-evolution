@@ -1,9 +1,7 @@
 package dev.chaunm.commerceevolution.order.application.usecase.getorder;
 
-import dev.chaunm.commerceevolution.customer.domain.exception.customer.CustomerNotFoundException;
-import dev.chaunm.commerceevolution.customer.domain.model.customer.Customer;
-import dev.chaunm.commerceevolution.customer.domain.model.customer.valueobject.AccountId;
-import dev.chaunm.commerceevolution.customer.domain.repository.customer.CustomerRepository;
+import dev.chaunm.commerceevolution.customer.application.port.CustomerDirectory;
+import dev.chaunm.commerceevolution.order.domain.exception.CustomerNotFoundException;
 import dev.chaunm.commerceevolution.order.domain.exception.OrderNotFoundException;
 import dev.chaunm.commerceevolution.order.domain.model.Order;
 import dev.chaunm.commerceevolution.order.domain.model.OrderItem;
@@ -14,24 +12,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class GetOrderUseCaseImpl implements GetOrderUseCase {
 
     private final OrderRepository orderRepository;
-    private final CustomerRepository customerRepository;
+    private final CustomerDirectory customerDirectory;
     private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional(readOnly = true)
     public GetOrderResult getOrder(GetOrderCommand command) {
-        Customer customer = customerRepository.findByAccountId(new AccountId(currentUserProvider.getCurrentUser().accountId()))
+        UUID customerId = customerDirectory.findCustomerIdByAccountId(currentUserProvider.getCurrentUser().accountId())
                 .orElseThrow(CustomerNotFoundException::new);
 
         Order order = orderRepository.findById(new OrderId(command.orderId()))
                 .orElseThrow(OrderNotFoundException::new);
 
-        if (!order.getCustomerId().value().equals(customer.getId().value())) {
+        if (!order.getCustomerId().value().equals(customerId)) {
             throw new OrderNotFoundException();
         }
 

@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProductMedia {
+public class ProductMedia implements MediaView {
     private final MediaId id;
     private String url;
     private int sortOrder;

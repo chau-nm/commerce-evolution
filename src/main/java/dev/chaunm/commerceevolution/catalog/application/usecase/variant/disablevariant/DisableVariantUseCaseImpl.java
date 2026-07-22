@@ -2,7 +2,7 @@ package dev.chaunm.commerceevolution.catalog.application.usecase.variant.disable
 
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
-import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.VariantView;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.VariantId;
 import dev.chaunm.commerceevolution.catalog.domain.repository.product.ProductRepository;
@@ -24,7 +24,7 @@ public class DisableVariantUseCaseImpl implements DisableVariantUseCase {
         Product product = productRepository.findById(new ProductId(command.productId()))
                 .orElseThrow(ProductNotFoundException::new);
 
-        ProductVariant variant = product.disableVariant(new VariantId(command.variantId()));
+        VariantView variant = product.disableVariant(new VariantId(command.variantId()));
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);

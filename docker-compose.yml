@@ -12,6 +12,10 @@ services:
       - "5432:5432"
     volumes:
       - pg_volume:/var/lib/postgresql/18/data
+    # Default max_connections=100 is exhausted by a full `./gradlew test` run: every distinct
+    # @SpringBootTest bean-override combination gets its own cached Spring context and HikariCP
+    # pool, and dozens of those stay open concurrently up to Spring Test's context-cache limit.
+    command: [ "postgres", "-c", "max_connections=200" ]
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-commerceevolutiondb}" ]
       interval: 10s

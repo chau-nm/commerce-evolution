@@ -3,7 +3,7 @@ package dev.chaunm.commerceevolution.catalog.application.usecase.variant.addvari
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.DuplicateVariantSkuException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
-import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.VariantView;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.Money;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.SKU;
@@ -32,7 +32,7 @@ public class AddVariantUseCaseImpl implements AddVariantUseCase {
         }
 
         Money price = new Money(command.price());
-        ProductVariant variant = product.addVariant(sku, command.name(), price);
+        VariantView variant = product.addVariant(sku, command.name(), price);
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);

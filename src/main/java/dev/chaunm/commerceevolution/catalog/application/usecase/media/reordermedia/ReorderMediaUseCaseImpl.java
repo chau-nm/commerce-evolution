@@ -1,7 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.application.usecase.media.reordermedia;
 
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
-import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
+import dev.chaunm.commerceevolution.catalog.domain.model.media.MediaView;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.valueobject.MediaId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
@@ -34,7 +34,7 @@ public class ReorderMediaUseCaseImpl implements ReorderMediaUseCase {
         return new ReorderMediaResult(
                 savedProduct.getId().value(),
                 savedProduct.getMedias().stream()
-                        .sorted(Comparator.comparingInt(ProductMedia::getSortOrder))
+                        .sorted(Comparator.comparingInt(MediaView::getSortOrder))
                         .map(media -> new ReorderMediaResult.MediaItem(
                                 media.getId().value(),
                                 media.getUrl(),

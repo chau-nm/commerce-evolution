@@ -1,13 +1,11 @@
 package dev.chaunm.commerceevolution.cart.application.usecase.getcart;
 
+import dev.chaunm.commerceevolution.cart.domain.exception.CustomerNotFoundException;
 import dev.chaunm.commerceevolution.cart.domain.model.Cart;
 import dev.chaunm.commerceevolution.cart.domain.model.CartItem;
 import dev.chaunm.commerceevolution.cart.domain.model.valueobject.CustomerId;
 import dev.chaunm.commerceevolution.cart.domain.repository.CartRepository;
-import dev.chaunm.commerceevolution.customer.domain.exception.customer.CustomerNotFoundException;
-import dev.chaunm.commerceevolution.customer.domain.model.customer.Customer;
-import dev.chaunm.commerceevolution.customer.domain.model.customer.valueobject.AccountId;
-import dev.chaunm.commerceevolution.customer.domain.repository.customer.CustomerRepository;
+import dev.chaunm.commerceevolution.customer.application.port.CustomerDirectory;
 import dev.chaunm.commerceevolution.shared.application.currentuser.CurrentUserProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,16 +18,15 @@ import java.util.List;
 public class GetCartUseCaseImpl implements GetCartUseCase {
 
     private final CartRepository cartRepository;
-    private final CustomerRepository customerRepository;
+    private final CustomerDirectory customerDirectory;
     private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional(readOnly = true)
     public GetCartResult getCart() {
-        Customer customer = customerRepository.findByAccountId(new AccountId(currentUserProvider.getCurrentUser().accountId()))
-                .orElseThrow(CustomerNotFoundException::new);
-
-        CustomerId customerId = new CustomerId(customer.getId().value());
+        CustomerId customerId = new CustomerId(
+                customerDirectory.findCustomerIdByAccountId(currentUserProvider.getCurrentUser().accountId())
+                        .orElseThrow(CustomerNotFoundException::new));
 
         return cartRepository.findByCustomerId(customerId)
                 .map(this::toResult)

@@ -3,7 +3,7 @@ package dev.chaunm.commerceevolution.catalog.application.usecase.variant.updatev
 import dev.chaunm.commerceevolution.catalog.domain.exception.variant.DuplicateVariantSkuException;
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
-import dev.chaunm.commerceevolution.catalog.domain.model.variant.ProductVariant;
+import dev.chaunm.commerceevolution.catalog.domain.model.variant.VariantView;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.SKU;
 import dev.chaunm.commerceevolution.catalog.domain.model.variant.valueobject.VariantId;
@@ -32,7 +32,7 @@ public class UpdateVariantUseCaseImpl implements UpdateVariantUseCase {
             throw new DuplicateVariantSkuException(sku);
         }
 
-        ProductVariant variant = product.updateVariant(variantId, sku, command.name());
+        VariantView variant = product.updateVariant(variantId, sku, command.name());
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);

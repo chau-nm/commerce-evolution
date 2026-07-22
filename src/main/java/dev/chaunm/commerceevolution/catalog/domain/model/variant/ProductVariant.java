@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProductVariant {
+public class ProductVariant implements VariantView {
     private final VariantId id;
     private SKU sku;
     private String name;

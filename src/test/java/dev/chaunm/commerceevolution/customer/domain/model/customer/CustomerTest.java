@@ -80,6 +80,13 @@ class CustomerTest {
     }
 
     @Test
+    void firstAddressBecomesDefaultEvenWhenNotRequested() {
+        Address address = addSampleAddress("Home", false);
+
+        assertThat(address.isDefault()).isTrue();
+    }
+
+    @Test
     void addingANonDefaultAddressDoesNotAffectExistingDefault() {
         Address first = addSampleAddress("Home", true);
         customer.clearDomainEvents();

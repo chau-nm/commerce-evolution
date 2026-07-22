@@ -10,6 +10,8 @@ import dev.chaunm.commerceevolution.customer.domain.model.customer.valueobject.G
 import dev.chaunm.commerceevolution.customer.domain.model.customer.valueobject.PhoneNumber;
 import dev.chaunm.commerceevolution.customer.domain.repository.customer.CustomerRepository;
 import dev.chaunm.commerceevolution.shared.application.currentuser.CurrentUserProvider;
+import dev.chaunm.commerceevolution.shared.testsupport.TestSecurityContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +39,14 @@ class GetCartUseCaseImplTest {
     @Autowired
     private CurrentUserProvider currentUserProvider;
 
+    @AfterEach
+    void clearAuthentication() {
+        TestSecurityContext.clear();
+    }
+
     @BeforeEach
     void setUp() {
+        TestSecurityContext.authenticateAs(UUID.randomUUID());
         Customer customer = CustomerFactory.create(
                 new AccountId(currentUserProvider.getCurrentUser().accountId()),
                 new FullName("Nguyen Van A"),

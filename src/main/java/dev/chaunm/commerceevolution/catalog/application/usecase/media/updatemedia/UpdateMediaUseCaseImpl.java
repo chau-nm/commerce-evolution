@@ -1,7 +1,7 @@
 package dev.chaunm.commerceevolution.catalog.application.usecase.media.updatemedia;
 
 import dev.chaunm.commerceevolution.catalog.domain.exception.product.ProductNotFoundException;
-import dev.chaunm.commerceevolution.catalog.domain.model.media.ProductMedia;
+import dev.chaunm.commerceevolution.catalog.domain.model.media.MediaView;
 import dev.chaunm.commerceevolution.catalog.domain.model.media.valueobject.MediaId;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.Product;
 import dev.chaunm.commerceevolution.catalog.domain.model.product.valueobject.ProductId;
@@ -24,7 +24,7 @@ public class UpdateMediaUseCaseImpl implements UpdateMediaUseCase {
         Product product = productRepository.findById(new ProductId(command.productId()))
                 .orElseThrow(ProductNotFoundException::new);
 
-        ProductMedia media = product.updateMedia(new MediaId(command.mediaId()), command.url());
+        MediaView media = product.updateMedia(new MediaId(command.mediaId()), command.url());
 
         Product savedProduct = productRepository.save(product);
         product.domainEvents().forEach(domainEventPublisher::publish);
