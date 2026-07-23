@@ -1,0 +1,15 @@
+name: Java Test
+
+on:
+  pull_request: ~
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests in docker compose
+        run: docker compose run --rm --build server ./gradlew test --no-daemon
