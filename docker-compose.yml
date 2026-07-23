@@ -1,7 +1,26 @@
 volumes:
   pg_volume:
+  gradle_cache:
 
 services:
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: dev
+    environment:
+      - DB_URL=jdbc:postgresql://database:5432/commerceevolutiondb
+      - DB_USERNAME=admin
+      - DB_PASSWORD=admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - gradle_cache:/root/.gradle
+      - .:/app:rw
+    depends_on:
+      database:
+        condition: service_healthy
+
   database:
     image: postgres:18
     environment:
@@ -12,9 +31,6 @@ services:
       - "5432:5432"
     volumes:
       - pg_volume:/var/lib/postgresql/18/data
-    # Default max_connections=100 is exhausted by a full `./gradlew test` run: every distinct
-    # @SpringBootTest bean-override combination gets its own cached Spring context and HikariCP
-    # pool, and dozens of those stay open concurrently up to Spring Test's context-cache limit.
     command: [ "postgres", "-c", "max_connections=200" ]
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-commerceevolutiondb}" ]
