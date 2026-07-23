@@ -1,0 +1,42 @@
+package dev.chaunm.commerceevolution.catalog.domain.exception;
+
+import dev.chaunm.commerceevolution.shared.domain.exception.ErrorCode;
+
+public enum CatalogErrorCode implements ErrorCode {
+    INVALID_PRODUCT_NAME,
+    INVALID_SLUG,
+    INVALID_SKU,
+    DUPLICATE_SLUG,
+    PRODUCT_NOT_FOUND,
+    INVALID_STATUS_TRANSITION,
+    PRODUCT_ARCHIVED,
+    DUPLICATE_SKU,
+    VARIANT_NOT_FOUND,
+    INVALID_MEDIA_URL,
+    MEDIA_NOT_FOUND,
+    INVALID_STATUS_FILTER,
+    PRODUCT_ALREADY_DELETED,
+    PRODUCT_NOT_DELETED,
+    PRODUCT_DELETED,
+    VARIANT_ALREADY_ACTIVE,
+    VARIANT_ALREADY_INACTIVE,
+    MEDIA_ALREADY_PRIMARY,
+    INVALID_MEDIA_ORDER,
+    INVALID_CATEGORY_NAME,
+    CATEGORY_NOT_FOUND,
+    CATEGORY_ALREADY_DELETED,
+    CATEGORY_NOT_DELETED,
+    CATEGORY_CANNOT_BE_OWN_PARENT,
+    CIRCULAR_CATEGORY_REFERENCE,
+    PARENT_CATEGORY_NOT_FOUND,
+    INVALID_BRAND_NAME,
+    BRAND_NOT_FOUND,
+    BRAND_ALREADY_DELETED,
+    BRAND_NOT_DELETED,
+    INVALID_PRICE;
+
+    @Override
+    public String code() {
+        return name();
+    }
+}
