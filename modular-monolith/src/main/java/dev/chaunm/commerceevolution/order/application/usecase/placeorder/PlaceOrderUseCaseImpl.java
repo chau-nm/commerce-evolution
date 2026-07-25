@@ -43,6 +43,7 @@ public class PlaceOrderUseCaseImpl implements PlaceOrderUseCase {
     private final ReserveStockUseCase reserveStockUseCase;
     private final CurrentUserProvider currentUserProvider;
     private final DomainEventPublisher domainEventPublisher;
+    private final PlaceOrderMapper placeOrderMapper;
 
     @Override
     @Transactional
@@ -78,7 +79,7 @@ public class PlaceOrderUseCaseImpl implements PlaceOrderUseCase {
 
         clearCartUseCase.clearCart();
 
-        return toResult(order);
+        return placeOrderMapper.toResult(order);
     }
 
     private OrderItem toOrderItem(GetCartResult.CartItemResult cartItem) {
@@ -98,26 +99,6 @@ public class PlaceOrderUseCaseImpl implements PlaceOrderUseCase {
                 variant.variantName(),
                 new Money(variant.price()),
                 new Quantity(cartItem.quantity())
-        );
-    }
-
-    private PlaceOrderResult toResult(Order order) {
-        return new PlaceOrderResult(
-                order.getId().value(),
-                order.getOrderNumber().value(),
-                order.getStatus().name(),
-                order.getTotalAmount().amount(),
-                order.getItems().stream()
-                        .map(item -> new PlaceOrderResult.OrderItemResult(
-                                item.getId().value(),
-                                item.getVariantId().value(),
-                                item.getProductName(),
-                                item.getVariantName(),
-                                item.getUnitPrice().amount(),
-                                item.getQuantity().value(),
-                                item.getSubtotal().amount()
-                        ))
-                        .toList()
         );
     }
 }
