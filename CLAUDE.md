@@ -9,18 +9,30 @@ backend and deliberately evolves its architecture over time: starting as a well-
 **modular monolith** with strict Domain-Driven Design boundaries, adding distributed-system
 patterns only when needed, and eventually splitting into microservices. This explains why the
 code favors explicit bounded-context boundaries, domain purity (no framework types leaking into
-`domain`), and small, deliberate abstractions even though there is currently only one Spring
-Boot application/module.
+`domain`), and small, deliberate abstractions even though most of the platform still lives in
+one Spring Boot application.
 
-The intended core business domains are: Authentication, Product Management, Inventory
-Management, Order Management, and Payment. **Authentication** and **Product Management**
-(`catalog`) are implemented so far — use them as the reference pattern when scaffolding a new
-bounded context. `inventory`, `order`, and `payment` packages exist but are currently empty.
+The repo is a monorepo of independently deployable applications, one directory each:
+
+- **`modular-monolith/`** — the original app: Authentication, Product Management (`catalog`),
+  Inventory, Order, Cart, Customer, Notification. Its own Gradle build/wrapper, own Dockerfile,
+  own `docker-compose.yml`.
+- **`payment-service/`** — Payment, extracted out of the monolith into its own Spring Boot app
+  with its own database. See "Payment service (extracted)" below.
+- Root `docker-compose.yml` brings both up together (needed for order <-> payment HTTP calls);
+  each also has its own standalone compose file for developing it in isolation.
+
+**Authentication** and **Product Management** (`catalog`) were the first bounded contexts to
+land in `modular-monolith/` and remain the reference pattern when scaffolding a new one there.
 
 ## Commands
 
+All of these run from **`modular-monolith/`** (its own Gradle wrapper) unless noted otherwise;
+`payment-service/` has the identical set, run from `payment-service/` instead.
+
 ```bash
-# Start Postgres (required for the app and any test that touches the DB)
+# Start Postgres for just this app (from modular-monolith/); or `docker compose up -d` from the
+# repo root to start both apps + both databases together
 docker compose up -d
 
 # Build / compile
@@ -39,16 +51,17 @@ docker compose up -d
 Java toolchain is pinned to **Java 25** (see `build.gradle.kts`). Flyway runs migrations
 automatically on startup (`spring.flyway.enabled=true`) and Hibernate is set to
 `ddl-auto: validate` — schema changes must go through a new Flyway migration in
-`src/main/resources/db/migration`, never through entity/annotation changes alone.
+`<app>/src/main/resources/db/migration`, never through entity/annotation changes alone.
 
 Default local DB connection (overridable via `DB_URL`/`DB_USERNAME`/`DB_PASSWORD` env vars):
 `jdbc:postgresql://localhost:5432/commerceevolutiondb`, user/pass `admin`/`admin` (see
-`docker-compose.yml` and `application.yaml`).
+`modular-monolith/docker-compose.yml` and `modular-monolith/src/main/resources/application.yaml`).
 
 ## Architecture: DDD bounded contexts
 
-Each bounded context lives under `src/main/java/dev/chaunm/commerceevolution/<context>/` (e.g.
-`authentication/`) and is internally layered as:
+Each bounded context lives under
+`modular-monolith/src/main/java/dev/chaunm/commerceevolution/<context>/` (e.g. `authentication/`)
+and is internally layered as:
 
 ```
 <context>/
@@ -116,7 +129,7 @@ specific bounded context.
 ### Auth/security specifics
 
 - JWTs are RS256, signed/verified via Nimbus using an `RSAKey` built in `KeyConfiguration` from
-  PEM files at `src/main/resources/jwt/{private,public}.pem` (paths configurable via
+  PEM files at `modular-monolith/src/main/resources/jwt/{private,public}.pem` (paths configurable via
   `app.jwt.private-key` / `app.jwt.public-key`). Access/refresh token TTLs are configured via
   `app.jwt.access-token-ttl` / `refresh-token-ttl` (ISO-8601 durations, env-overridable).
 - `SecurityConfiguration` permits `/api/v1/auth/**` and `/actuator/**`; everything else requires
@@ -144,3 +157,48 @@ specific bounded context.
   `@TransactionalEventListener` handlers under `catalog/application/event/` are currently stub
   no-ops that only log — extend them when a real side effect is needed instead of adding logic
   inline in the use case.
+
+## Payment service (extracted)
+
+`payment-service/`, a sibling directory to `modular-monolith/` at the repo root, is a **separate,
+independently deployable Spring Boot application** — its own Gradle build/wrapper, own
+`paymentdb` Postgres database (Flyway migrations under
+`payment-service/src/main/resources/db/migration`), own Dockerfile and `docker-compose.yml`
+(also wired into the root `docker-compose.yml` as `payment-server` / `payment-database` so the
+whole platform comes up together). Its internal layering mirrors the monolith's bounded-context
+convention (`domain` / `application` / `infrastructure` / `presentation` under
+`dev.chaunm.paymentservice.payment`), plus a small duplicated `dev.chaunm.paymentservice.shared`
+(error model, `AggregateRoot`/`DomainEvent` building blocks, `GlobalExceptionHandler`) —
+duplicated rather than published as a shared library on purpose, to avoid cross-repo build
+coupling for ~150 lines of infra; revisit with a real shared-kernel artifact once a third
+service is extracted.
+
+`modular-monolith/` talks to it purely over HTTP, never via shared DB or in-process calls:
+
+- **Order → Payment**: `order/application/event/InitiatePaymentOnOrderCreatedEventHandler`
+  reacts to `OrderCreatedEvent` (`AFTER_COMMIT`, same as before) and calls
+  `order/application/port/PaymentServiceClient` (impl in `order/infrastructure/client/`), which
+  wraps a `RestClient` call to payment-service's `POST /api/v1/payments` with a resilience4j
+  timeout + retry + circuit breaker. A 409 (payment-service already has a payment for that
+  order) is treated as a delivered, non-retried outcome, not a failure — order placement is
+  never blocked or rolled back by a payment-service outage.
+- **Payment → Order**: payment-service's `PaymentSucceededEventHandler` /
+  `PaymentFailedEventHandler` (`AFTER_COMMIT` listeners on its own domain events) call an
+  outbound `PaymentEventNotifier` port that POSTs the outcome to this monolith's
+  `POST /internal/payment-events` webhook, with the same resilience policy. That webhook
+  (`paymentevents/` package) is the **single inbound integration point**: it marks the order
+  paid via `MarkOrderPaidUseCase` and creates the success/failure notification via
+  `CreateNotificationUseCase`, resolving the customer through the existing `OrderDirectory`
+  port. It is idempotent by construction — `paymentevents.infrastructure.persistence` records
+  each `paymentId` the first time it's seen (a payment only ever settles once) and skips any
+  redelivery.
+- Both the webhook and `PUT /api/v1/orders/{orderId}/pay` are service-to-service only: gated by
+  a shared static header (`X-Internal-Api-Key`, see `shared/infrastructure/security/`) rather
+  than end-user JWT, wired into `SecurityConfiguration` ahead of `AuthenticationFilter`. This is
+  a minimum-viable control, not real service auth — see the migration report for the
+  recommended follow-up (verify-only JWT using the shared RSA public key).
+
+No Docker daemon was available in the environment this extraction was performed in; the
+end-to-end HTTP flow (initiate → confirm → webhook → order paid → notification, plus both
+idempotency guards) was instead verified by running both apps directly against ephemeral
+Postgres containers. `docker compose config` was used to validate the compose files themselves.

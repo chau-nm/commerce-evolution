@@ -4,7 +4,7 @@ on:
   pull_request: ~
 
 jobs:
-  test:
+  test-modular-monolith:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,9 +13,19 @@ jobs:
 
       - name: Generate JWT key pair for tests
         run: |
-          mkdir -p src/main/resources/jwt
-          openssl genpkey -algorithm RSA -out src/main/resources/jwt/private.pem -pkeyopt rsa_keygen_bits:2048
-          openssl rsa -pubout -in src/main/resources/jwt/private.pem -out src/main/resources/jwt/public.pem
+          mkdir -p modular-monolith/src/main/resources/jwt
+          openssl genpkey -algorithm RSA -out modular-monolith/src/main/resources/jwt/private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in modular-monolith/src/main/resources/jwt/private.pem -out modular-monolith/src/main/resources/jwt/public.pem
 
       - name: Run tests in docker compose
         run: docker compose run --rm --build server ./gradlew test --no-daemon
+
+  test-payment-service:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests in docker compose
+        run: docker compose run --rm --build payment-server ./gradlew test --no-daemon

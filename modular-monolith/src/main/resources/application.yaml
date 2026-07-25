@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: commerceevolution
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/commerceevolutiondb}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+app:
+  jwt:
+    private-key: classpath:jwt/private.pem
+    public-key: classpath:jwt/public.pem
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL:P30D}
+  media:
+    upload-dir: ${MEDIA_UPLOAD_DIR:uploads}
+    public-path: ${MEDIA_PUBLIC_PATH:/media}
+  internal:
+    api-key: ${INTERNAL_API_KEY:dev-internal-api-key}
+  payment-service:
+    base-url: ${PAYMENT_SERVICE_BASE_URL:http://localhost:8081}
+    connect-timeout: ${PAYMENT_SERVICE_CONNECT_TIMEOUT:PT2S}
+    read-timeout: ${PAYMENT_SERVICE_READ_TIMEOUT:PT3S}
+    max-retry-attempts: ${PAYMENT_SERVICE_MAX_RETRY_ATTEMPTS:3}
+    circuit-breaker:
+      failure-rate-threshold: ${PAYMENT_SERVICE_CB_FAILURE_RATE:50}
+      wait-duration-in-open-state: ${PAYMENT_SERVICE_CB_WAIT_DURATION:PT10S}
+      sliding-window-size: ${PAYMENT_SERVICE_CB_SLIDING_WINDOW:10}

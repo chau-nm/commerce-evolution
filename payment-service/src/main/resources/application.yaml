@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/paymentdb}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+server:
+  port: ${SERVER_PORT:8081}
+
+app:
+  internal:
+    api-key: ${INTERNAL_API_KEY:dev-internal-api-key}
+  order-service:
+    base-url: ${ORDER_SERVICE_BASE_URL:http://localhost:8080}
+    connect-timeout: ${ORDER_SERVICE_CONNECT_TIMEOUT:PT2S}
+    read-timeout: ${ORDER_SERVICE_READ_TIMEOUT:PT3S}
+    max-retry-attempts: ${ORDER_SERVICE_MAX_RETRY_ATTEMPTS:3}
+    circuit-breaker:
+      failure-rate-threshold: ${ORDER_SERVICE_CB_FAILURE_RATE:50}
+      wait-duration-in-open-state: ${ORDER_SERVICE_CB_WAIT_DURATION:PT10S}
+      sliding-window-size: ${ORDER_SERVICE_CB_SLIDING_WINDOW:10}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    dev.chaunm.paymentservice: ${LOG_LEVEL:INFO}
